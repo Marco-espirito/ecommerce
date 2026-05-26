@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         Role      @default(USER)
+  orders       Order[]
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Product {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String
+  priceCents  Int          @map("price_cents")
+  stock       Int          @default(0)
+  imageUrl    String?      @map("image_url")
+  category    String
+  orderItems  OrderItem[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  @@map("products")
+}
+
+model Order {
+  id              Int          @id @default(autoincrement())
+  userId          Int          @map("user_id")
+  user            User         @relation(fields: [userId], references: [id])
+  totalCents      Int          @map("total_cents")
+  status          OrderStatus  @default(PENDING)
+  stripeSessionId String?      @unique @map("stripe_session_id")
+  items           OrderItem[]
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id            Int      @id @default(autoincrement())
+  orderId       Int      @map("order_id")
+  order         Order    @relation(fields: [orderId], references: [id])
+  productId     Int      @map("product_id")
+  product       Product  @relation(fields: [productId], references: [id])
+  quantity      Int
+  unitPriceCents Int     @map("unit_price_cents")
+
+  @@map("order_items")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  CANCELLED
+}
