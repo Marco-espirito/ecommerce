@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import api from "../api/client";
 import { useAuthStore } from "../store/authStore";
+
 
 export default function MonCompte() {
   const token = useAuthStore((s) => s.token);
@@ -49,7 +50,12 @@ export default function MonCompte() {
             })}
           </p>
         </div>
-
+        
+        <Link to="/mes-commandes"
+        className="block bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg transition text-sm text-center"
+        >
+        Voir mes commandes
+        </Link>
         <button
           onClick={logout}
           className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg transition text-sm"

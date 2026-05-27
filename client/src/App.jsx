@@ -7,6 +7,8 @@ import Panier from "./pages/Panier";
 import Connexion from "./pages/Connexion";
 import Inscription from "./pages/Inscription";
 import MonCompte from "./pages/MonCompte";
+import CommandeConfirmee from "./pages/CommandeConfirmee";
+import MesCommandes from "./pages/MesCommandes";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="connexion" element={<Connexion />} />
           <Route path="inscription" element={<Inscription />} />
           <Route path="mon-compte" element={<MonCompte />} />
+          <Route path="commande-confirmee" element={<CommandeConfirmee />} />
+          <Route path="mes-commandes" element={<MesCommandes />} />
         </Route>
       </Routes>
     </BrowserRouter>

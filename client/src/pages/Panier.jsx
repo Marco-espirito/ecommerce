@@ -1,16 +1,48 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
+import { useAuthStore } from "../store/authStore";
+import api from "../api/client";
+import { useState } from "react";
 
 export default function Panier() {
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const clear = useCartStore((s) => s.clear);
+  const token = useAuthStore((s) => s.token);
+  const navigate = useNavigate();
 
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(null);
   const totalCents = items.reduce(
     (sum, i) => sum + i.priceCents * i.quantity,
     0
   );
+
+  const handleCheckout = async () => {
+    if (!token) {
+      navigate("/connexion");
+      return;
+    }
+
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const res = await api.post("/checkout", {
+        items: items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+        })),
+      });
+      // Redirection vers la page Stripe
+      window.location.href = res.data.url;
+    } catch (err) {
+      setCheckoutError(err.response?.data?.error || "Erreur de paiement");
+      setCheckoutLoading(false);
+    }
+  };
+
 
   if (items.length === 0) {
     return (
@@ -120,12 +152,23 @@ export default function Panier() {
             </div>
           </div>
 
-          <button
-            onClick={() => alert("Checkout Stripe → Phase 4 !")}
-            className="w-full bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-semibold transition"
-          >
-            Passer commande
-          </button>
+          {checkoutError && (
+  <div className="bg-red-900/30 border border-red-800 text-red-300 rounded-lg p-3 text-sm mb-4">
+    {checkoutError}
+  </div>
+)}
+
+<button
+  onClick={handleCheckout}
+  disabled={checkoutLoading}
+  className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition"
+>
+  {checkoutLoading
+    ? "Redirection..."
+    : token
+    ? "Passer commande"
+    : "Se connecter pour commander"}
+</button>
 
           <Link
             to="/catalogue"
