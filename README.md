@@ -84,17 +84,32 @@
 └──────────────┘         └────────────────┘
 ---
 
-## 🔐 Bonnes pratiques implémentées
+## 🔐 Sécurité
 
-- ✅ **Prix recalculés côté serveur** au checkout — impossible pour le client d'envoyer un prix manipulé
-- ✅ **Webhook Stripe signé** — vérification de la signature via `STRIPE_WEBHOOK_SECRET`
-- ✅ **Idempotence du webhook** — si Stripe retry, la commande n'est pas re-traitée
-- ✅ **Transaction atomique** — la mise à jour du statut commande + décrément du stock se fait dans un seul `prisma.$transaction([...])`
-- ✅ **Validation Zod sur tous les endpoints** sensibles (register, login, checkout)
-- ✅ **Mots de passe hashés bcrypt** (10 rounds) — jamais stockés en clair
-- ✅ **Variables d'environnement** dans `.env` (jamais versionnées)
-- ✅ **Tokens JWT** avec expiration (7 jours)
+### Implémenté
+- ✅ **Hash bcrypt 12 rounds** des mots de passe (jamais stockés en clair)
+- ✅ **JWT signés** avec expiration 7 jours
+- ✅ **Mots de passe renforcés** : 8+ caractères, majuscule, minuscule, chiffre obligatoires (validation Zod côté serveur + indicateur visuel côté client)
+- ✅ **Rate limiting** :
+  - 5 tentatives login/register / IP / 15 min (anti brute-force)
+  - 100 requêtes / IP / 15 min sur toute l'API (anti-DDoS basique)
+- ✅ **Helmet** : 12 headers HTTP de sécurité (CSP, X-Frame-Options, anti-clickjacking, etc.)
+- ✅ **Mitigation timing attack** sur le login (appel bcrypt même si l'email n'existe pas)
+- ✅ **Messages d'erreur génériques** sur l'auth (empêche l'énumération d'emails)
+- ✅ **CORS** restreint à l'origine du client uniquement
+- ✅ **Webhook Stripe signé** : vérification de la signature `whsec_*`
+- ✅ **Idempotence du webhook** : pas de double traitement si Stripe retry
+- ✅ **Transactions atomiques** Prisma (commande + stock dans un seul `$transaction`)
+- ✅ **Validation Zod** sur tous les inputs sensibles
+- ✅ **Recalcul prix côté serveur** au checkout (impossible de manipuler le panier)
+- ✅ **Prisma ORM** : protection native contre les injections SQL
+- ✅ **Variables d'environnement** non versionnées
 
+### Limites assumées (projet pédagogique)
+- ⚠️ **JWT en `localStorage`** : vulnérable au XSS. En prod réelle, on passerait à des **cookies httpOnly + Secure + SameSite=Strict** avec **refresh tokens** pour permettre la révocation de sessions.
+- ⚠️ **Pas de vérification email** à l'inscription. En prod : envoi d'un lien magique via Resend/Brevo avant activation du compte.
+- ⚠️ **Pas de 2FA** sur les comptes admin. En prod : TOTP (Google Authenticator).
+- ⚠️ **Pas de protection CSRF** explicite (acceptable avec JWT en `Authorization` header, deviendrait nécessaire si passage aux cookies).
 ---
 
 ## 🚀 Lancer en local
@@ -250,4 +265,4 @@ Projet personnel à but pédagogique. Libre de réutilisation.
 
 ---
 
-**Auteur** : [Marc Danon](https://github.com/Marco-espirito) 
+**Auteur** : [Marc Danon](https://github.com/Marco-espirito)

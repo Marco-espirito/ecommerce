@@ -58,7 +58,7 @@ export default function Inscription() {
             required
             minLength={8}
             className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition"
-            placeholder="Min 8 caractères"
+            placeholder="Min 8 car., 1 maj., 1 min., 1 chiffre"
           />
         </div>
 
@@ -67,8 +67,23 @@ export default function Inscription() {
             {error}
           </div>
         )}
-
-        <button
+            {password && (
+        <div className="text-xs space-y-1">
+            <p className={password.length >= 8 ? "text-green-400" : "text-slate-500"}>
+            {password.length >= 8 ? "✓" : "○"} Au moins 8 caractères
+            </p>
+            <p className={/[A-Z]/.test(password) ? "text-green-400" : "text-slate-500"}>
+            {/[A-Z]/.test(password) ? "✓" : "○"} Au moins une majuscule
+            </p>
+            <p className={/[a-z]/.test(password) ? "text-green-400" : "text-slate-500"}>
+            {/[a-z]/.test(password) ? "✓" : "○"} Au moins une minuscule
+            </p>
+            <p className={/[0-9]/.test(password) ? "text-green-400" : "text-slate-500"}>
+            {/[0-9]/.test(password) ? "✓" : "○"} Au moins un chiffre
+            </p>
+        </div>
+        )}
+                <button
           type="submit"
           disabled={loading}
           className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition"
